@@ -38,6 +38,6 @@ thoughtSchema.virtual('reactionCount').get(function () {
 });
 
 
-const User = model('user', userSchema);
+const Thought = model('thought', thoughtSchema);
 
-module.exports = User;
+module.exports = Thought;
