@@ -6,13 +6,13 @@ const thoughtSchema = new Schema(
         thoughtText: {
             type: String,
             required: true,
-            min: [1, 'Too few eggs'],
-            max: [280, 'Too many eggs'],
+            min: [1, 'not enough characters'],
+            max: [280, 'Too many characters'],
         },
         username: [
             {
-                type: Schema.Types.ObjectId,
-                ref: 'user',
+                type: String,
+                ref: 'User',
             }
 
         ],
@@ -26,7 +26,7 @@ const thoughtSchema = new Schema(
     // Use a getter method to format the timestamp on query??
     {
         toJSON: {
-            getters: true,
+            getters: true
         },
         id: false,
     }
@@ -37,7 +37,6 @@ thoughtSchema.virtual('reactionCount').get(function () {
     return this.reactions.length;
 });
 
-
-const Thought = model('thought', thoughtSchema);
+const Thought = model('Thought', thoughtSchema);
 
 module.exports = Thought;

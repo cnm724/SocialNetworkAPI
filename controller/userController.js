@@ -5,26 +5,30 @@
 
     // BONUS: Remove a user's associated thoughts when deleted.
 
-const { ObjectId } = require('mongoose').Types;
 const { User, Thought } = require('../models');
 
 module.exports = {
-  // Get all students
-  async getUsers(req, res) {
-    try {
-      const users = await User.find();
+  // Get all users
+    async getUsers(req, res) {
+      try {
+        const users = await User.find()
+  
+          .populate("thoughts")// Populate thoughts field
+          .populate("friends");// Populate friends field
+  
+        return res.status(200).json(users);
+      } catch (err) {
+        console.log(err);
+        return res.status(500).json(err);
+      }
+    },
 
-      res.json(users);
-    } catch (err) {
-      console.log(err);
-      return res.status(500).json(err);
-    }
-  },
-  // Get a single student
+  // Get a single user
   async getOneUser(req, res) {
     try {
       const user = await User.findOne({ _id: req.params.userId })
-        .select('-__v');
+      .populate('thoughts') // Populate thoughts field
+      .populate('friends'); // Populate friends field
 
       if (!user) {
         return res.status(404).json({ message: 'No user with that ID' })
@@ -36,7 +40,8 @@ module.exports = {
       return res.status(500).json(err);
     }
   },
-  // create a new student
+
+  // create a new user
   async createUser(req, res) {
     try {
       const user = await User.create(req.body);
@@ -45,75 +50,78 @@ module.exports = {
       res.status(500).json(err);
     }
   },
-  // Delete a student and remove them from the course
+
+    // Update a User
+    async updateUser(req, res) {
+      try {
+        const user = await User.findOneAndUpdate(
+          req.params.UserId,
+          { $set: req.body },
+          { runValidators: true, new: true }
+        );
+  
+        if (!user) {
+          res.status(404).json({ message: 'No user with this id!' });
+        }
+  
+        res.json(user);
+      } catch (err) {
+        res.status(500).json(err);
+      }
+    },
+
+  // Delete a user and remove their thoughts
   async deleteUser(req, res) {
     try {
-      const user = await User.findOneAndRemove({ _id: req.params.userId });
-
+      const user = await User.findOneAndDelete({ _id: req.params.userId });
       if (!user) {
         return res.status(404).json({ message: 'No user exists' });
       }
-
-      const thought = await Thought.findOneAndUpdate(
-        { users: req.params.userId },
-        { $pull: { users: req.params.userId } },
-        { new: true }
-      );
-
-      if (!thought) {
-        return res.status(404).json({
-          message: 'User deleted, but no thoughts found',
-        });
-      }
-
-      res.json({ message: 'User successfully deleted' });
+      await Thought.deleteMany({ _id: { $in: user.thoughts } });
+      res.json({ message: 'User and associated thoughts deleted!' });
     } catch (err) {
       console.log(err);
       res.status(500).json(err);
     }
   },
 
-  // // Add an assignment to a student
-  // async addAssignment(req, res) {
-  //   console.log('You are adding an assignment');
-  //   console.log(req.body);
+  // Friends =========================================================
+  async addFriend(req, res) {
+    try {
+      const friend = await User.findOneAndUpdate(
+        { _id: req.params.userId },
+        { $addToSet: { friends: req.params.friendId } },
+        { runValidators: true, new: true }
+      );
 
-  //   try {
-  //     const student = await Student.findOneAndUpdate(
-  //       { _id: req.params.studentId },
-  //       { $addToSet: { assignments: req.body } },
-  //       { runValidators: true, new: true }
-  //     );
+      if (!friend) {
+        return res.status(404).json({ message: "No user with that ID" });
+      }
 
-  //     if (!student) {
-  //       return res
-  //         .status(404)
-  //         .json({ message: 'No student found with that ID :(' });
-  //     }
+      return res.status(200).json(friend);
+    } catch (err) {
+      console.log(err);
+      return res.status(500).json(err);
+    }
+  },
 
-  //     res.json(student);
-  //   } catch (err) {
-  //     res.status(500).json(err);
-  //   }
-  // },
-  // // Remove assignment from a student
-  // async removeAssignment(req, res) {
-  //   try {
-  //     const student = await Student.findOneAndUpdate(
-  //       { _id: req.params.studentId },
-  //       { $pull: { assignment: { assignmentId: req.params.assignmentId } } },
-  //       { runValidators: true, new: true }
-  //     );
+   // Delete friend
+   async removeFriend(req, res) {
+    try {
+      const friend = await User.findOneAndUpdate(
+        { _id: req.params.userId },
+        { $pull: { friends: req.params.friendId } },
+        { runValidators: true, new: true }
+      );
 
-  //     if (!student) {
-  //       return res
-  //         .status(404)
-  //         .json({ message: 'No student found with that ID :(' });
-  //     }
+      if (!friend) {
+        return res.status(404).json({ message: "Check user and friend ID" });
+      }
 
-  //     res.json(student);
-  //   } catch (err) {
-  //     res.status(500).json(err);
-  //   }
-  // },
+      return res.status(200).json(friend);
+    } catch (err) {
+      console.log(err);
+      return res.status(500).json(err);
+    }
+  },
 };
