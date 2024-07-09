@@ -23,7 +23,7 @@
 
 ## Description
 
-This application was built in mind for social media startups that will use a NoSQL database structure where users can share their thoughts, react to friends' thoughts, and create a friend list. This application uses MongoDB for handling large amounts of unstructured data, Express.js for routing and the Mongoose ODM for database operations. The web applications routing and CRUD are tested using Insomnia (but can use postman if you prefer).
+This application was built in mind for social media startups that will use a NoSQL database structure where users can share their thoughts, react to friends' thoughts, create a friend list, and add reactions (replies) to thoughts. This application uses MongoDB for handling large amounts of unstructured data, Express.js for routing and the Mongoose ODM for database operations. The web applications routing and CRUD are tested using Insomnia (but can use postman if you prefer).
 
 ## Installation
 - You will need Insomnia or Postman to check routes.
